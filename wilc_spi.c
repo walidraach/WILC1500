@@ -21,6 +21,12 @@
 #include "wilc_wlan_if.h"
 #include "wilc_wlan.h"
 #include "wilc_wfi_netdevice.h"
+#include "wilc_gpio.h"
+
+struct wilc_gpio wilc_gpio;
+
+void chip_wakeup(struct wilc *wilc, int source);
+void chip_allow_sleep(struct wilc *wilc, int source);
 
 struct wilc_spi {
 	int crc_off;
@@ -123,6 +129,8 @@ static u8 crc7(u8 crc, const u8 *buffer, u32 len)
 #define DATA_PKT_SZ				DATA_PKT_SZ_8K
 
 #define USE_SPI_DMA				0
+
+struct wilc_gpio wilc_gpio
 
 static int wilc_bus_probe(struct spi_device *spi)
 {
