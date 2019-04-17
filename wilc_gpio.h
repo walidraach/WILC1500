@@ -2,6 +2,7 @@
 #define WILC_GPIO
 
 #define SDIO_GPIO_NODE "sdio"
+#define SPI_GPIO_NODE "spi"
 struct wilc_gpio
 {
     int gpio_irq;
