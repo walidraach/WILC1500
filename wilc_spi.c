@@ -142,9 +142,10 @@ static int wilc_bus_probe(struct spi_device *spi)
 			spi->modalias, spi->max_speed_hz);
 
 	ret = wilc_netdev_init(&wilc, dev, HIF_SPI, &wilc_hif_spi);
-	if (ret)
+	if (ret) {
+		dev_err(&func->dev, "Couldn't initialize netdev\n");
 		return ret;
-
+	}
 	spi_set_drvdata(spi, wilc);
 	wilc->dev = &spi->dev;
 
@@ -213,6 +214,7 @@ static const struct of_device_id wilc_of_match[] = {
 	{}
 };
 MODULE_DEVICE_TABLE(of, wilc_of_match);
+
 static const struct dev_pm_ops wilc_spi_pm_ops = {
      .suspend = wilc_spi_suspend,
      .resume    = wilc_spi_resume,
@@ -227,6 +229,8 @@ static struct spi_driver wilc_spi_driver = {
 	.probe =  wilc_bus_probe,
 	.remove = wilc_bus_remove,
 };
+
+
 module_spi_driver(wilc_spi_driver);
 MODULE_LICENSE("GPL");
 
