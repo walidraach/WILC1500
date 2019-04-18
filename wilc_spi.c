@@ -230,8 +230,79 @@ static struct spi_driver wilc_spi_driver = {
 	.remove = wilc_bus_remove,
 };
 
+static int __init wilc_spi_driver_init(void)
 
-module_spi_driver(wilc_spi_driver);
+	struct device_node *cnp;
+	int ret;
+	int gpio_reset = -1;
+	int gpio_chip_en = -1;
+	int gpio_irq = -1 ;
+
+	cnp = of_find_node_by_name(NULL, SPI_GPIO_NODE);
+	if (cnp == NULL){
+		printk(KERN_WARNING "Device tree \"%s\" not found, using default pin defs\n", SPI_GPIO_NODE);
+		wilc_gpio.gpio_chip_en = GPIO_NUM_CHIP_EN;
+		wilc_gpio.gpio_irq = GPIO_NUM_IRQ;
+		wilc_gpio.gpio_reset = GPIO_NUM_RESET;
+	} else {
+		gpio_reset = of_get_named_gpio_flags(cnp, "gpio_reset", 0, NULL);
+		if (gpio_reset < 0) {
+			ret = gpio_reset;
+			gpio_reset = GPIO_NUM_RESET;
+			printk(KERN_WARNING "WILC setting default Reset GPIO to %d. Got %d\n",
+				 gpio_reset, ret);
+		} else {
+			printk(KERN_INFO "WILC got %d for gpio_reset\n",
+				 gpio_reset);
+		}
+
+		gpio_chip_en = of_get_named_gpio_flags(cnp, "gpio_chip_en", 0, NULL);
+		if (gpio_chip_en < 0) {
+			ret = gpio_chip_en;
+			gpio_chip_en = GPIO_NUM_CHIP_EN;
+			printk(KERN_WARNING "WILC setting default Chip Enable GPIO to %d. Got %d\n",
+				 gpio_chip_en, ret);
+		} else {
+			printk(KERN_INFO "WILC got %d for gpio_chip_en\n",
+				 gpio_chip_en);
+		}
+
+		gpio_irq = of_get_named_gpio_flags(cnp, "gpio_irq", 0, NULL);
+		if (gpio_irq < 0) {
+			ret = gpio_irq;
+			gpio_irq = GPIO_NUM_IRQ;
+			printk(KERN_WARNING "WILC setting default IRQ GPIO to %d. Got %d\n",
+				 gpio_irq, ret);
+		} else {
+			printk(KERN_INFO "WILC got %d for gpio_irq\n", gpio_irq);
+		}
+
+		wilc_gpio.gpio_chip_en = gpio_chip_en;
+		wilc_gpio.gpio_irq = gpio_irq;
+		wilc_gpio.gpio_reset = gpio_reset;
+
+		gpio_request_one(wilc_gpio.gpio_chip_en, GPIOF_INIT_LOW, "gpio_chip_en");
+		//gpio_request_one(wilc_gpio.gpio_irq, GPIOF_INIT_LOW, "gpio_irq");
+		gpio_request_one(wilc_gpio.gpio_reset, GPIOF_INIT_LOW, "gpio_reset");
+	}
+
+	printk(KERN_INFO "Enabling device\n");
+	wilc_wlan_power_on_sequence();
+	return spi_register_driver(&wilc_spi_driver); 
+} 
+module_init(wilc_spi_driver_init); 
+
+static void __exit wilc_spi_driver_exit(void) 
+{ 
+	gpio_free(wilc_gpio.gpio_chip_en);
+	gpio_free(wilc_gpio.gpio_irq);
+	gpio_free(wilc_gpio.gpio_reset);
+	spi_unregister_driver(&wilc_spi_driver); 
+} 
+module_exit(wilc_spi_driver_exit);
+
+
+
 MODULE_LICENSE("GPL");
 
 static int spi_data_rsp(struct wilc *wilc, u8 cmd)
