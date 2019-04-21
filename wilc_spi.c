@@ -130,7 +130,7 @@ static u8 crc7(u8 crc, const u8 *buffer, u32 len)
 
 #define USE_SPI_DMA				0
 
-struct wilc_gpio wilc_gpio
+struct wilc_gpio wilc_gpio;
 
 static int wilc_bus_probe(struct spi_device *spi)
 {
