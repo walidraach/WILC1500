@@ -141,7 +141,7 @@ static int wilc_bus_probe(struct spi_device *spi)
 
 	ret = wilc_netdev_init(&wilc, dev, HIF_SPI, &wilc_hif_spi);
 	if (ret) {
-		dev_err(&func->dev, "Couldn't initialize netdev\n");
+		dev_err(&spi->dev, "Couldn't initialize netdev\n");
 		return ret;
 	}
 	spi_set_drvdata(spi, wilc);
@@ -229,7 +229,7 @@ static struct spi_driver wilc_spi_driver = {
 };
 
 static int __init wilc_spi_driver_init(void)
-
+{
 	struct device_node *cnp;
 	int ret;
 	int gpio_reset = -1;
